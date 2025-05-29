@@ -45,4 +45,34 @@ RETURN result;
 
 END;
 $$
+
+alter stage traffic refresh;
+
+LIST  @traffic;
+
+
+CREATE OR REPLACE TABLE DEMO.DEMO.NYCTRAFFIC (
+  "ID" text,
+  speed text,
+  travel_time text,
+  status text,
+  data_as_of text,
+  link_id text,
+  link_points text,
+  encoded_poly_line text,
+  encoded_poly_line_lvls text,
+  "OWNER" text,
+  transcom_id text,
+  borough text,
+  link_name text,
+  "TS" text,
+  uuid text
+);
+
+
+  
+  
+describe table demo.demo.nyctraffic;
+
+select * from nyctraffic;
 ```
