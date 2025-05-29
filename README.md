@@ -75,6 +75,26 @@ CREATE OR REPLACE TABLE DEMO.DEMO.NYCTRAFFIC (
 describe table demo.demo.nyctraffic;
 
 select * from nyctraffic;
+
+CREATE OR REPLACE PROCEDURE insert_json_data(JSON_STRING STRING)
+RETURNS STRING
+LANGUAGE SQL
+AS
+$$
+DECLARE
+    result STRING;
+BEGIN   
+    INSERT INTO RAWNYCTRAFFICIMAGES (json_data)
+    SELECT PARSE_JSON(:JSON_STRING);
+
+    RETURN 'JSON data inserted successfully';
+EXCEPTION   
+WHEN OTHER THEN
+    RETURN 'Error inserting JSON: ' || SQLSTATE || ' - ' || SQLERRM;
+END;
+$$;
+
+
 ```
 
 ### Cortex AI SQL
