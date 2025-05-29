@@ -76,3 +76,26 @@ describe table demo.demo.nyctraffic;
 
 select * from nyctraffic;
 ```
+
+### Cortex AI SQL
+
+````
+
+SELECT SNOWFLAKE.CORTEX.COMPLETE('claude-3-5-sonnet',PROMPT('Compare these two traffic camera images {0} {1}',TO_FILE('@Traffic','NoLiveCamera.jpg'),
+TO_FILE('@Traffic','cam.path.0a9f1346-5f4a-424c-bdac-3fd6c16e099920250529094328.jpg20250529115868.jpg')));
+
+
+The first image shows an error message indicating "No live camera feed at this time" with an exclamation mark icon. The second image shows an active traffic camera view of an urban street scene, labeled as "Facing North" with a timestamp of Thu May 29 2025 11:32:50 AM. The active camera captures a typical city street with vehicles, buildings on both sides, trees lining the street, and what appears to be a bike lane or bus lane marked in red. The image quality is typical of traffic cameras, with a somewhat grainy, monochromatic appearance.
+
+
+````
+
+
+
+### Resources
+
+* https://docs.snowflake.com/en/user-guide/snowflake-cortex/complete-multimodal
+* https://docs.snowflake.com/en/sql-reference/functions/prompt
+
+
+
