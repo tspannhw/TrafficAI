@@ -289,6 +289,126 @@ QUALIFY ROW_NUMBER() OVER (
 ````
 
 
+Here's an article about the NiFi data flow for processing NYC traffic camera images:
+
+# Automated NYC Traffic Camera Processing with Apache NiFi
+
+This article details an automated workflow using Apache NiFi to collect, process, and analyze traffic camera images from New York City's network of cameras.
+
+## System Overview
+
+```mermaid
+graph TD
+    A[Get NYC Cameras] --> B[Error Handling]
+    B --> C[Process Records]
+    C --> D[Camera Validation]
+    D --> E[Image Processing]
+    E --> F[Storage & Analysis]
+    F --> G[Notifications]
+```
+
+## Detailed Workflow
+
+### 1. Data Acquisition
+The process begins with an `InvokeHTTP` processor fetching the list of NYC traffic cameras. 
+
+```mermaid
+graph LR
+    A[InvokeHTTP] --> B[RouteOnAttribute]
+    B -->|Valid| C[Continue]
+    B -->|Error| D[Discard]
+```
+
+### 2. Record Processing
+The data stream is then processed through several steps:
+
+- `SplitRecord`: Separates camera listings into individual records
+- `EvaluateJsonPath`: Extracts relevant attributes
+- `UpdateAttribute`: Adds randomization for API calls
+
+### 3. Camera Processing Pipeline
+
+```
+┌────────────────┐
+│ UpdateAttribute│
+│ (Build URL)    │
+└───────┬────────┘
+        ▼
+┌────────────────┐
+│RouteOnAttribute│
+│(Filter Cameras)│
+└───────┬────────┘
+        ▼
+┌────────────────┐
+│  InvokeHTTP    │
+│(Fetch Images)  │
+└────────────────┘
+```
+
+### 4. Storage and Analysis
+
+The workflow incorporates multiple storage and analysis steps:
+
+1. Local Storage:
+   - `UpdateAttribute`: Generate filenames
+   - `PutFile`: Save images locally
+
+2. Cloud Storage:
+   - `PublishSlack`: Share to Slack
+   - `ExecuteSQLRecord`: Upload to Snowflake
+
+3. AI Analysis:
+```mermaid
+graph TD
+    A[Upload to Stage] --> B[Process with Cortex AI]
+    B --> C[Extract Results]
+    C --> D[Generate Metadata]
+```
+
+### 5. Data Integration
+
+The final steps involve:
+
+- `AttributesToJSON`: Consolidate metadata
+- `ExtractText`: Format JSON records
+- `PutDatabaseRecord`: Store in NYCTRAFFICIMAGES
+- `PublishSlack`: Send notifications
+
+## Technical Implementation Details
+
+```json
+{
+  "workflow_components": {
+    "data_acquisition": {
+      "primary": "InvokeHTTP",
+      "error_handling": "RouteOnAttribute"
+    },
+    "processing": {
+      "record_splitting": "SplitRecord",
+      "attribute_extraction": "EvaluateJsonPath"
+    },
+    "storage": {
+      "local": "PutFile",
+      "cloud": "ExecuteSQLRecord"
+    }
+  }
+}
+```
+
+## Monitoring and Alerts
+
+The system includes comprehensive monitoring through Slack notifications:
+
+📊 **Alert Types**:
+- Image acquisition status
+- Processing completion
+- AI analysis results
+- Error notifications
+
+This automated pipeline ensures efficient processing of NYC traffic camera data while maintaining robust error handling and notification systems.
+
+
+
 
 ### Resources
 
@@ -297,3 +417,29 @@ QUALIFY ROW_NUMBER() OVER (
 
 
 
+
+* Get the list of NYC Cameras: InvokeHTTP
+* Through away error file:  RouteOnAttribute
+* Split flowfiles into single records: SplitRecord
+* Extract some attributes:  EvaluateJsonPath
+* Add randomness to URL calls:   UpdateAttribute
+* Build new URL:   UpdateAttribute
+* Throw away disabled cameras: RouteOnAttribute:
+* Call the new URL for each camera:   InvokeHTTP
+* Filter out dead images
+* Update filename: UpdateAttribute
+* Download image: PutFile
+* Send image to Slack:  PublishSlack
+* Push to Snowflake Internal Stage:  ExecuteSQLRecord
+* Get to one record:  SplitRecord
+* Get results of PUT to stage:   EvaluateJsonPath
+* Call Cortex AI Stored Procedure on uploaded image:  ExecuteSQLRecord
+* Split out multiple records into one at a time:  SplitRecord
+* Extract JSON from stored procedure: EvaluateJsonPath
+* Extract some values to attributes: EvaluateJsonPath
+* Build a new JSON file from all of our meta data:  AttributesToJSON
+* Build a JSON Record: ExtractText
+* Insert record to NYCTRAFFICIMAGES:  PutDatabaseRecord
+* Send text and attachment to Slack. PublishSlack
+
+  
