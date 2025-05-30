@@ -203,6 +203,63 @@ The first image shows an error message indicating "No live camera feed at this t
 ````
 
 
+#### Advanced Query
+
+````
+
+
+WITH traffic_data AS (
+    SELECT n.*,
+           r.json_data,
+           JSON_DATA:direction::STRING as direction,
+           JSON_DATA:environment.surroundings::ARRAY as surroundings,
+           JSON_DATA:environment.visibility::STRING as visibility,
+           JSON_DATA:environment.weather::STRING as weather,
+           JSON_DATA:image_quality::STRING as image_quality,
+           JSON_DATA:location::STRING as location,
+           JSON_DATA:road_features.bike_lane::STRING as bike_lane,
+           JSON_DATA:road_features.lanes::STRING as lanes,
+           JSON_DATA:road_features.markings::ARRAY as road_markings,
+           JSON_DATA:road_features.traffic_signals::STRING as traffic_signals,
+           JSON_DATA:timestamp::STRING as traffictimestamp,
+           JSON_DATA:traffic_conditions::STRING as traffic_conditions,
+           n.latitude as traffic_lat,
+           n.longitude as traffic_long
+    FROM DEMO.DEMO.NYCTRAFFICIMAGES n
+    LEFT OUTER JOIN DEMO.DEMO.RAWNYCTRAFFICIMAGES r
+    ON n.filename = r.filename
+)
+SELECT 
+    t.*,
+    a.number || ' ' || a.street || ' ' || a.street_type as street_address,
+    a.city,
+    a.state,
+    a.zip,
+    a.latitude as address_lat,
+    a.longitude as address_long,
+    ST_DISTANCE(
+        ST_MAKEPOINT(t.traffic_long, t.traffic_lat),
+        ST_MAKEPOINT(a.longitude, a.latitude)
+    ) as distance_in_meters
+FROM traffic_data t
+LEFT OUTER JOIN US_REAL_ESTATE.CYBERSYN.US_ADDRESSES a
+ON a.state = 'NY' 
+AND ST_DISTANCE(
+    ST_MAKEPOINT(t.traffic_long, t.traffic_lat),
+    ST_MAKEPOINT(a.longitude, a.latitude)
+) <= 100
+QUALIFY ROW_NUMBER() OVER (
+    PARTITION BY t.filename 
+   ORDER BY ST_DISTANCE(
+        ST_MAKEPOINT(t.traffic_long, t.traffic_lat),
+        ST_MAKEPOINT(a.longitude, a.latitude)
+    )
+) = 1;
+
+
+````
+
+
 
 ### Resources
 
