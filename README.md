@@ -23,8 +23,13 @@ AI App for Traffic management in NYC with Apache NiFi, Cortex AI, Claude, LLM, I
 * Get to one record:  SplitRecord
 * Get results of PUT to stage:   EvaluateJsonPath:   extract target and messages
 * Call Cortex AI Stored Procedure on uploaded image:  ExecuteSQLRecord:  call DEMO.DEMO.ANALYZETRAFFICIMAGE('${pdffile}','${filename}','${uuid}');
-* SplitRecord
+* Split out multiple records into one at a time:  SplitRecord: JSON Read and Write
 * Extract JSON from stored procedure: EvaluateJsonPath: $.ANALYZETRAFFICIMAGE
+* Extract some values to attributes: EvaluateJsonPath:  $.traffic_conditions
+* Build a new JSON file from all of our meta data:  AttributesToJSON:   videoid,videoname,videourl,filename,directionoftravel,latitude ,longitude,roadwayname,url2,ending,stagemessage,stagestatus,targetsize,uuid 
+* Build a JSON Record: ExtractText:  (?s)(^.*$)
+* Insert record to NYCTRAFFICIMAGES:  PutDatabaseRecord
+* Send text and attachment to Slack. PublishSlack
 
   
 
