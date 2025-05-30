@@ -2,7 +2,31 @@
 
 AI App for Traffic management in NYC with Apache NiFi, Cortex AI, Claude, LLM, Images, REST
 
+### AI Pipeline
 
+* Get the list of NYC Cameras: InvokeHTTP:   https://511ny.org/api/getcameras
+
+* Through away error file:  RouteOnAttribute:  ${fileSize:gt( 4096 )}
+
+* Split flowfiles into single records: SplitRecord:    JSONRead and Write
+  
+* EvaluateJsonPath: Extract some attributes
+* Add randomness to URL calls:   UpdateAttribute:   ${random():mod(9996565656):plus(3)}
+* Build new URL:   UpdateAttribute: ${url:append(${ending})}
+* Throw away disabled cameras: RouteOnAttribute:  ${Blocked:equalsIgnoreCase("False"):and(${Disabled:equalsIgnoreCase("False")})}
+* Call the new URL for each camera:   InvokeHTTP:  ${url2}
+* Filter out dead images:   RouteOnAttribute:  ${Content-Length:le(15136)}
+* Update filename: UpdateAttribute:  cam.${filename:append(${now():format('yyyyMMddHHmmSS'):append(${md5}):append('.jpg')})}
+* Download image: PutFile
+   - Send image to Slack:  PublishSlack
+* Push to Snowflake Internal Stage:  ExecuteSQLRecord:  PUT file:///Users/tspann/Downloads/code/images/${filename:trim()} @TRAFFIC AUTO_COMPRESS=FALSE;
+* Get to one record:  SplitRecord
+* Get results of PUT to stage:   EvaluateJsonPath:   extract target and messages
+* Call Cortex AI Stored Procedure on uploaded image:  ExecuteSQLRecord:  call DEMO.DEMO.ANALYZETRAFFICIMAGE('${pdffile}','${filename}','${uuid}');
+* SplitRecord
+* Extract JSON from stored procedure: EvaluateJsonPath: $.ANALYZETRAFFICIMAGE
+
+  
 
 ### SQL
 
