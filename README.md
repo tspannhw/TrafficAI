@@ -410,6 +410,113 @@ This automated pipeline ensures efficient processing of NYC traffic camera data 
 
 
 
+##  Automating NYC Traffic Camera Image Capture and Analysis with NiFi
+
+This article outlines a robust NiFi data pipeline designed to capture images from NYC traffic cameras, perform analysis, and disseminate insights. We'll explore each step of the process, highlighting the NiFi processors used and their roles in creating a seamless and intelligent data flow.
+
+### The Challenge: Harnessing Real-time Traffic Visuals
+
+New York City's traffic cameras provide a rich, real-time visual feed of urban mobility. However, extracting, processing, and leveraging this data for insights requires a sophisticated and automated system. Our NiFi pipeline addresses this by orchestrating the entire lifecycle, from fetching raw camera feeds to pushing processed images and metadata to analytical platforms and communication channels.
+
+### The NiFi Workflow: A Step-by-Step Breakdown
+
+Let's dive into the individual components of this NiFi flow.
+
+#### 1. Obtaining the NYC Camera List
+
+**Action:** Get the list of NYC Cameras
+**NiFi Processor:** InvokeHTTP
+
+The journey begins with fetching the initial list of NYC traffic cameras. The `InvokeHTTP` processor is perfectly suited for this, allowing us to make an HTTP GET request to the NYC camera API endpoint and retrieve the raw camera metadata, likely in JSON format.
+
+#### 2. Handling Errors
+
+**Action:** Through away error file
+**NiFi Processor:** RouteOnAttribute
+
+Robust data pipelines must gracefully handle errors. The `RouteOnAttribute` processor plays a crucial role here. It examines the attributes of incoming FlowFiles (NiFi's data representation unit). If an error occurs during the API call (e.g., a camera is offline), `RouteOnAttribute` can route the error FlowFile to a separate path for logging or further investigation, ensuring that the main flow isn't disrupted.
+
+#### 3. Preparing Data for Processing
+
+**Action:** Split flowfiles into single records
+**NiFi Processor:** SplitRecord
+
+The initial API response likely contains a list of camera records. To process each camera individually, we use `SplitRecord`. This processor divides the incoming FlowFile (containing the entire list) into multiple FlowFiles, each representing a single camera's data.
+
+#### 4. Extracting Relevant Information
+
+**Action:** Extract some attributes
+**NiFi Processor:** EvaluateJsonPath
+
+The camera data likely contains more information than we need. `EvaluateJsonPath` allows us to extract specific attributes from the JSON data, such as the camera's ID, URL, and status. This makes subsequent processing steps more efficient.
+
+#### 5 & 6. Building Dynamic URLs
+
+**Action:** Add randomness to URL calls & Build new URL
+**NiFi Processor:** UpdateAttribute (used twice)
+
+To avoid overloading the camera API and ensure we get fresh images, we can add a bit of randomness to the URL calls. `UpdateAttribute` is the workhorse for manipulating FlowFile attributes. In the first instance, it might add a random query parameter (e.g., a timestamp) to the URL. In the second instance, it constructs the complete URL for fetching the camera image, potentially combining the base URL with the camera ID extracted earlier.
+
+#### 7. Filtering Unusable Data
+
+**Action:** Throw away disabled cameras
+**NiFi Processor:** RouteOnAttribute
+
+Similar to error handling, we might need to filter out cameras that are temporarily disabled or offline. `RouteOnAttribute` again comes into play, examining the camera status attribute and routing FlowFiles for disabled cameras to a separate path.
+
+#### 8. Fetching the Images
+
+**Action:** Call the new URL for each camera
+**NiFi Processor:** InvokeHTTP
+
+Now that we have the correct URLs, `InvokeHTTP` is used again, this time to fetch the actual image data from each camera.
+
+#### 9. Image Quality Check (Implicit)
+
+**Action:** Filter out dead images
+
+This step isn't tied to a specific NiFi processor in the list, but it's crucial. You'd likely use a combination of processors: perhaps `EvaluateJsonPath` to extract image metadata (if available from the API) and `RouteOnAttribute` to filter out images that are reported as corrupted or unavailable. You might also use a custom script in a `ExecuteStreamCommand` processor to perform an actual image analysis to check for validity.
+
+#### 10 & 11. Preparing Images for Storage
+
+**Action:** Update filename & Download image
+**NiFi Processor:** UpdateAttribute & PutFile
+
+Before saving the images, we'll want to give them meaningful filenames. `UpdateAttribute` is used to create a filename based on the camera ID and timestamp. Then, `PutFile` saves the image to a designated directory.
+
+#### 12. Sharing Images
+
+**Action:** Send image to Slack
+**NiFi Processor:** PublishSlack
+
+For real-time monitoring, we can send images directly to a Slack channel using `PublishSlack`. This allows for immediate visual inspection of traffic conditions.
+
+#### 13 - 19. Data Integration and Analysis
+
+These steps focus on pushing data to Snowflake, performing AI analysis, and extracting insights.
+
+* **Push to Snowflake Internal Stage: ExecuteSQLRecord** - Loads image metadata into Snowflake.
+* **Get to one record: SplitRecord** - Prepares data for AI processing.
+* **Get results of PUT to stage: EvaluateJsonPath** - Extracts relevant information from the Snowflake load results.
+* **Call Cortex AI Stored Procedure on uploaded image: ExecuteSQLRecord** - Triggers AI analysis (e.g., object detection, traffic density analysis).
+* **Split out multiple records into one at a time: SplitRecord** - Handles results that may contain multiple objects detected in the image.
+* **Extract JSON from stored procedure: EvaluateJsonPath** - Parses the JSON output from the AI procedure.
+* **Extract some values to attributes: EvaluateJsonPath** - Extracts specific attributes from the AI results (e.g., number of cars, detected objects).
+
+#### 20 - 23. Building and Storing Metadata
+
+* **Build a new JSON file from all of our meta data: AttributesToJSON** - Creates a comprehensive JSON file containing all extracted metadata.
+* **Build a JSON Record: ExtractText** - Constructs a JSON record.
+* **Insert record to NYCTRAFFICIMAGES: PutDatabaseRecord** - Inserts the final record into a database table.
+* **Send text and attachment to Slack: PublishSlack** - Sends the processed metadata and possibly the analyzed image to a Slack channel.
+
+### Conclusion
+
+This NiFi pipeline provides a powerful and flexible solution for automatically capturing, processing, analyzing, and disseminating information from NYC traffic cameras. The modular nature of NiFi allows for easy modification and extension of this workflow to meet evolving needs.
+
+
+
+
 ### Resources
 
 * https://docs.snowflake.com/en/user-guide/snowflake-cortex/complete-multimodal
@@ -417,6 +524,8 @@ This automated pipeline ensures efficient processing of NYC traffic camera data 
 
 
 
+
+### List of Steps
 
 * Get the list of NYC Cameras: InvokeHTTP
 * Through away error file:  RouteOnAttribute
