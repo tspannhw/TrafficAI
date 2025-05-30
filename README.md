@@ -517,6 +517,26 @@ This NiFi pipeline provides a powerful and flexible solution for automatically c
 
 
 
+
+### Step-by-Step Diagram
+
+![image](https://github.com/user-attachments/assets/091a07d2-582f-4fcf-8aad-cb9c87286d58)
+
+
+This diagram illustrates the detailed flow of data through the NiFi workflow, starting with image capture and progressing through various processing steps to data storage and notification. It shows the individual NiFi processors involved and how they connect to perform the required actions.
+
+### High-Level Diagram
+
+![image](https://github.com/user-attachments/assets/ef81b444-a34b-45c1-b8a5-a606b978050c)
+
+This diagram provides a broader overview of the NiFi workflow, highlighting the major stages of data processing, from initial image capture to final data storage and notification. It simplifies the process, focusing on the key phases and data transformations involved.
+
+Would you like any further adjustments or more details on these diagrams?
+
+
+
+
+
 ### Resources
 
 * https://docs.snowflake.com/en/user-guide/snowflake-cortex/complete-multimodal
