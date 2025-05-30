@@ -95,6 +95,32 @@ END;
 $$;
 
 
+
+CREATE OR REPLACE TABLE DEMO.DEMO.NYCTRAFFICIMAGES (
+  videoid text,
+  videoname text,
+  videourl text,
+  filename text,
+  directionoftravel text,
+  latitude text,
+  longitude text,
+  roadwayname text,
+  url2 text,
+  ending text,
+  stagemessage text,
+  stagestatus text,
+  targetsize text,
+  uuid text
+);
+
+
+CREATE OR REPLACE TABLE DEMO.DEMO.RAWNYCTRAFFICIMAGES 
+(
+    uuid text,
+    filename text,
+    json_data VARIANT
+);
+
 ```
 
 ### Cortex AI SQL
