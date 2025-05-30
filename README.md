@@ -147,6 +147,27 @@ EXCEPTION
 END;
 $$;
 
+
+
+SELECT n.*,
+       r.json_data,
+       JSON_DATA:direction::STRING as direction,
+       JSON_DATA:environment.surroundings::ARRAY as surroundings,
+       JSON_DATA:environment.visibility::STRING as visibility,
+       JSON_DATA:environment.weather::STRING as weather,
+       JSON_DATA:image_quality::STRING as image_quality,
+       JSON_DATA:location::STRING as location,
+       JSON_DATA:road_features.bike_lane::STRING as bike_lane,
+       JSON_DATA:road_features.lanes::STRING as lanes,
+       JSON_DATA:road_features.markings::ARRAY as road_markings,
+       JSON_DATA:road_features.traffic_signals::STRING as traffic_signals,
+       JSON_DATA:timestamp::STRING as traffictimestamp,
+       JSON_DATA:traffic_conditions::STRING as traffic_conditions
+FROM DEMO.DEMO.NYCTRAFFICIMAGES n
+LEFT JOIN DEMO.DEMO.RAWNYCTRAFFICIMAGES r
+ON n.filename = r.filename;
+
+
 ```
 
 ### Cortex AI SQL
