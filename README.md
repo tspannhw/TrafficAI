@@ -168,11 +168,30 @@ LEFT JOIN DEMO.DEMO.RAWNYCTRAFFICIMAGES r
 ON n.filename = r.filename;
 
 
+
 ```
 
 ### Cortex AI SQL
 
 ````
+
+CREATE OR REPLACE PROCEDURE DEMO.DEMO.COUNTVEHICLES(IMAGE_NAME STRING)
+RETURNS INTEGER
+LANGUAGE SQL
+EXECUTE AS OWNER
+AS $$
+DECLARE
+  resultcount INTEGER;
+BEGIN
+  ALTER STAGE TRAFFIC REFRESH; 
+  
+  SELECT SNOWFLAKE.CORTEX.COMPLETE('pixtral-large', 'Return a count the number of distinct vehicles in this image.Some of the vehicles may appear small. Pay particular attention to the vehicles in the upper part of the image.Do not provide any other details. Do not provide any other words or commentary.',
+    TO_FILE('@TRAFFIC', :IMAGE_NAME)))  INTO :resultcount;
+   RETURN resultcount;
+END;
+$$
+
+
 
 SELECT SNOWFLAKE.CORTEX.COMPLETE('claude-3-5-sonnet',PROMPT('Compare these two traffic camera images {0} {1}',TO_FILE('@Traffic','NoLiveCamera.jpg'),
 TO_FILE('@Traffic','cam.path.0a9f1346-5f4a-424c-bdac-3fd6c16e099920250529094328.jpg20250529115868.jpg')));
