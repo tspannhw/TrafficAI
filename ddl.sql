@@ -71,3 +71,101 @@ create or replace TABLE DEMO.DEMO.NYCTRAFFICIMAGES (
 	UUID VARCHAR(16777216)
 );
 
+
+
+
+CREATE OR REPLACE PROCEDURE DEMO.DEMO.ANALYZETRAFFICIMAGE("IMAGE_NAME" VARCHAR)
+RETURNS OBJECT
+LANGUAGE SQL
+EXECUTE AS OWNER
+AS '
+DECLARE
+  result VARIANT;
+BEGIN
+   ALTER STAGE TRAFFIC REFRESH; 
+  
+   SELECT SNOWFLAKE.CORTEX.COMPLETE(''claude-3-5-sonnet'', 
+    ''Analyze this traffic image and describe what you see. Respond in compact JSON format.'',
+    TO_FILE(''@TRAFFIC'', :IMAGE_NAME)) INTO :result;
+
+   INSERT INTO DEMO.DEMO.RAWNYCTRAFFICIMAGES 
+   (json_data)
+   SELECT PARSE_JSON(:result ) as json_data;
+    
+   RETURN result;
+EXCEPTION
+    WHEN OTHER THEN
+        RETURN ''Error: '' || SQLSTATE || '' - ''|| SQLERRM;   
+END;
+';
+
+
+CREATE OR REPLACE PROCEDURE DEMO.DEMO.ANALYZETRAFFICIMAGE("IMAGE_NAME" VARCHAR, "FILENAME" VARCHAR, "UUID" VARCHAR)
+RETURNS OBJECT
+LANGUAGE SQL
+EXECUTE AS OWNER
+AS '
+DECLARE
+  result VARIANT;
+BEGIN
+   ALTER STAGE TRAFFIC REFRESH; 
+  
+   SELECT SNOWFLAKE.CORTEX.COMPLETE(''claude-3-5-sonnet'', 
+    ''Analyze this traffic image and describe what you see. Respond in compact JSON format.'',
+    TO_FILE(''@TRAFFIC'', :IMAGE_NAME)) INTO :result;
+
+   INSERT INTO DEMO.DEMO.RAWNYCTRAFFICIMAGES 
+   (json_data, filename, uuid)
+   SELECT PARSE_JSON(:result ) as json_data, :filename, :uuid;
+    
+   RETURN result;
+EXCEPTION
+    WHEN OTHER THEN
+        RETURN ''Error: '' || SQLSTATE || '' - ''|| SQLERRM;   
+END;
+';
+
+CREATE OR REPLACE PROCEDURE DEMO.DEMO.ANALYZETRAFFICIMAGE("IMAGE_NAME" VARCHAR, "UUID" VARCHAR)
+RETURNS OBJECT
+LANGUAGE SQL
+EXECUTE AS OWNER
+AS '
+DECLARE
+  result VARIANT;
+BEGIN
+   ALTER STAGE TRAFFIC REFRESH; 
+  
+   SELECT SNOWFLAKE.CORTEX.COMPLETE(''claude-3-5-sonnet'', 
+    ''Analyze this traffic image and describe what you see. Respond in compact JSON format.'',
+    TO_FILE(''@TRAFFIC'', :IMAGE_NAME)) INTO :result;
+
+   INSERT INTO DEMO.DEMO.RAWNYCTRAFFICIMAGES 
+   (json_data, filename, uuid)
+   SELECT PARSE_JSON(:result ) as json_data, :IMAGE_NAME, :UUID;
+    
+   RETURN result;
+EXCEPTION
+    WHEN OTHER THEN
+        RETURN ''Error: '' || SQLSTATE || '' - ''|| SQLERRM;   
+END;
+';
+
+CREATE OR REPLACE PROCEDURE DEMO.DEMO.COUNT_VEHICLES_IN_IMAGE("IMAGE_NAME" VARCHAR)
+RETURNS OBJECT
+LANGUAGE SQL
+EXECUTE AS OWNER
+AS '
+DECLARE
+    result VARIANT;
+BEGIN
+-- Use claude-3-5-sonnet model for image analysis with structured output
+ALTER STAGE TRAFFIC REFRESH; 
+
+SELECT SNOWFLAKE.CORTEX.COMPLETE(''claude-3-5-sonnet'',''Analyze this traffic image and count the number of vehicles. Return the result in JSON format with these fields: total_count (number), vehicle_types (array of strings with vehicle categories), confidence_level (string: high, medium, or low). Only include clearly visible vehicles.'',TO_FILE(''@Traffic'', :IMAGE_NAME)) INTO :result;
+
+RETURN result;
+
+END;
+';
+
+
