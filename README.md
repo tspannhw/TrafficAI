@@ -555,6 +555,7 @@ Would you like any further adjustments or more details on these diagrams?
 
 * https://docs.snowflake.com/en/user-guide/snowflake-cortex/complete-multimodal
 * https://docs.snowflake.com/en/sql-reference/functions/prompt
+* https://github.com/tspannhw/CortexAISearchForAirQuality
 
 
 
