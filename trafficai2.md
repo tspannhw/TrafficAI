@@ -1,7 +1,3 @@
-This is an exciting and comprehensive NiFi pipeline! I will craft an article describing this AI pipeline.
-
----
-
 ## AI-Powered Traffic Monitoring: An Apache NiFi Pipeline for NYC Cameras
 
 **Introduction:**
