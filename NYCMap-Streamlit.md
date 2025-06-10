@@ -10,6 +10,11 @@ Streamlit Python Component in Snowflake for NYC Traffic Data
 ![image](https://github.com/user-attachments/assets/52af82f1-be30-4458-893b-7d6b3bdb2b4c)
 
 
+
+![image](https://github.com/user-attachments/assets/3b1833e4-9688-40fb-88dc-6958c4ff38a0)
+
+
+
 ### Code 
 
 ````
