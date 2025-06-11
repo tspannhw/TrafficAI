@@ -2,6 +2,9 @@
 
 AI App for Traffic management in NYC with Apache NiFi, Cortex AI, Claude, LLM, Images, REST
 
+![NiFiSpinWhisk_gif_zbiywnhzgi](https://github.com/user-attachments/assets/1dae718f-1c8f-449e-bbc4-9bf6d84474df)
+
+
 ### AI Pipeline
 
 * Get the list of NYC Cameras: InvokeHTTP:   https://511ny.org/api/getcameras
