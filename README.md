@@ -5,7 +5,20 @@ AI App for Traffic management in NYC with Apache NiFi, Cortex AI, Claude, LLM, I
 ![NiFiSpinWhisk_gif_zbiywnhzgi](https://github.com/user-attachments/assets/1dae718f-1c8f-449e-bbc4-9bf6d84474df)
 
 
+### Video Demo
+
+https://www.youtube.com/watch?v=SbLkx6v1lm0
+
+### References
+
+* https://github.com/tspannhw/TrafficAI/blob/main/NYCMap-Streamlit.md
+* https://github.com/tspannhw/TrafficAI/blob/main/trafficai2.md
+  
+
 ### AI Pipeline
+
+![image](https://github.com/user-attachments/assets/166d0de6-ea07-4429-90e2-35c2a51d0328)
+
 
 * Get the list of NYC Cameras: InvokeHTTP:   https://511ny.org/api/getcameras
 
@@ -40,25 +53,30 @@ AI App for Traffic management in NYC with Apache NiFi, Cortex AI, Claude, LLM, I
 
 ```
 
-CREATE OR REPLACE PROCEDURE DEMO.DEMO.ANALYZETRAFFICIMAGE(IMAGE_NAME STRING)
+CREATE OR REPLACE PROCEDURE DEMO.DEMO.ANALYZETRAFFICIMAGE("IMAGE_NAME" VARCHAR, "FILENAME" VARCHAR, "UUID" VARCHAR)
 RETURNS OBJECT
 LANGUAGE SQL
 EXECUTE AS OWNER
-AS $$
+AS '
 DECLARE
   result VARIANT;
 BEGIN
-  ALTER STAGE TRAFFIC REFRESH; 
+   ALTER STAGE TRAFFIC REFRESH; 
   
-  SELECT SNOWFLAKE.CORTEX.COMPLETE('claude-3-5-sonnet', 
-    'Analyze this traffic image and describe what you see. Respond in compact JSON format.',
-    TO_FILE('@TRAFFIC', :IMAGE_NAME)) INTO :result;
+   SELECT SNOWFLAKE.CORTEX.COMPLETE(''claude-3-5-sonnet'', 
+    ''Analyze this traffic image and describe what you see. Respond in compact JSON format.'',
+    TO_FILE(''@TRAFFIC'', :IMAGE_NAME)) INTO :result;
 
+   INSERT INTO DEMO.DEMO.RAWNYCTRAFFICIMAGES 
+   (json_data, filename, uuid)
+   SELECT PARSE_JSON(:result ) as json_data, :filename, :uuid;
+    
    RETURN result;
+EXCEPTION
+    WHEN OTHER THEN
+        RETURN ''Error: '' || SQLSTATE || '' - ''|| SQLERRM;   
 END;
-$$
-
-
+';
 
 CREATE OR REPLACE PROCEDURE count_vehicles_in_image(IMAGE_NAME STRING)
 RETURNS OBJECT
@@ -81,7 +99,6 @@ $$
 alter stage traffic refresh;
 
 LIST  @traffic;
-
 
 CREATE OR REPLACE TABLE DEMO.DEMO.NYCTRAFFIC (
   "ID" text,
