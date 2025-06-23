@@ -56,3 +56,9 @@ analyst_services: # List all Cortex Analyst semantic models/views
 }
 
 ````
+
+
+
+### References
+
+* https://docs.cursor.com/context/model-context-protocol
