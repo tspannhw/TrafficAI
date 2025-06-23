@@ -1,6 +1,6 @@
 ### Snowflake Cortex AI Agents
 
-
+ 
 
 ### Let's call MCP Server from Cursor IDE
 
