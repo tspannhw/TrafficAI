@@ -1,7 +1,7 @@
 ### Snowflake Cortex AI Agents
 
  
-https://github.com/tspannhw/TrafficAI/blob/main/Agents/trimg.c26a348d-77c4-4424-9728-cf969866a3669a924cc4-6515-4be0-a452-bfd4af0798c6.jpg?raw=true
+![img](https://github.com/tspannhw/TrafficAI/blob/main/Agents/trimg.c26a348d-77c4-4424-9728-cf969866a3669a924cc4-6515-4be0-a452-bfd4af0798c6.jpg?raw=true)
 
 
 
